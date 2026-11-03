@@ -5,8 +5,8 @@
     <title>My Favourite Movies</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
     <style>
-        body { --primary: #5c709d; --secondary: #29b6f6; margin: 0px;}
-        * {font-family: 'Roboto', sans-serif;}
+        body { --primary: #5c709d; --secondary: #29b6f6; margin: 0px; font-family: 'Roboto', sans-serif;}
+        
         button { 
             -webkit-font-smoothing: antialiased;
             display: inline-block;
@@ -15,26 +15,33 @@
             color: var(--primary);
             background: white;
             border: 1px solid var(--primary);
-            height: 20px;
-            font-size: 9px;
+            height: 24px;
+            font-size: 11px;
             text-transform: uppercase;
             cursor: pointer;
             transition: ease-in 0.2s all;
-            padding: 0 8px 0 8px;
+            padding: 0 10px;
             border-radius: 8px;
         }
-        div#main {padding: 10px;}
-        input {margin-bottom: 5px; margin-top: 2px; padding: 4px; font-size: 12px; }
-        h1 {background: var(--primary); color: white; font-weight: 300; text-transform: uppercase; font-size: 20px; margin: 0px; padding: 15px; text-align: center;}
-        h2 { margin-block-start: 0px; margin-block-end: 10px; font-size: 20px;  color: var(--primary);}
         button:hover { background: var(--primary); color: white; }
+
+        div#main { padding: 15px; max-width: 1200px; margin: 0 auto; }
+        input { margin-bottom: 5px; margin-top: 2px; padding: 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        h1 { background: var(--primary); color: white; font-weight: 300; text-transform: uppercase; font-size: 20px; margin: 0px; padding: 15px; text-align: center; }
+        h2 { margin-block-start: 0px; margin-block-end: 10px; font-size: 20px; color: var(--primary); }
+        
         div.actions { margin-top: 15px; margin-bottom: 15px; }
         div.movie { display: inline-block; width: 200px; padding: 10px; box-shadow: 2px 2px 7px rgba(0,0,0,0.2); background: #5c709d; margin: 8px; border-radius: 8px; vertical-align: top; text-align: center; }
-        div.movie div.movie-img { width: 200px; height: 300px; cursor: pointer; overflow: hidden; border-radius: 8px; background: #3c4b6e; }
+        
+        /* Correction de la taille des images pour que toutes les cartes soient uniformes */
+        div.movie div.movie-img { width: 200px; height: 280px; cursor: pointer; overflow: hidden; border-radius: 8px; background: #3c4b6e; }
         div.movie div.movie-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        
         div.movie div.title { text-align: center; overflow: hidden; text-overflow: ellipsis; width: 200px; white-space: nowrap; color: white; font-weight: bold; margin: 8px 0; }
-        div.field {color: var(--primary); text-transform: uppercase; font-size: 12px;}
-    
+        div.field { color: var(--primary); text-transform: uppercase; font-size: 12px; margin-top: 10px; font-weight: bold; }
+        
+        /* TMDb Search & Config Styling */
         .config-box { background: #f0f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d0d7de; }
         .search-box { display: flex; gap: 8px; align-items: center; margin: 15px 0; }
         .search-box input { flex: 1; padding: 8px; font-size: 14px; margin: 0; }
@@ -52,25 +59,25 @@
 
     <script type="text/javascript">
 
+        // CONFIG & STATE MANAGEMENT
         const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
-        let currentSearchResults = []; // Stores latest fetched TMDb results
+        let currentSearchResults = [];
 
         // Helper to retrieve user's API Token from localStorage
         const getApiKey = () => localStorage.getItem('tmdb_api_key') || '';
 
-       // DATA MODEL
-
-       let initial_movies = [
-        { title: "Superlópez", director: "Javier Ruiz Caldera", thumbnail: "files/superlopez.png" },
-        { title: "Jurassic Park", director: "Steven Spielberg", thumbnail: "files/jurassicpark.png" },
-        { title: "Interstellar", director: "Christopher Nolan", thumbnail: "files/interstellar.png" }
+        // DATA MODEL
+        let initial_movies = [
+            { title: "Superlópez", director: "Javier Ruiz Caldera", thumbnail: "files/superlopez.png" },
+            { title: "Jurassic Park", director: "Steven Spielberg", thumbnail: "files/jurassicpark.png" },
+            { title: "Interstellar", director: "Christopher Nolan", thumbnail: "files/interstellar.png" }
         ];
 
         localStorage.my_movies = localStorage.my_movies || JSON.stringify(initial_movies);
 
         // VIEWS
         const indexView = (movies) => {
-            let i=0;
+            let i = 0;
             let view = "";
 
             while(i < movies.length) {
@@ -93,13 +100,12 @@
 
             view += `<div class="actions">
                         <button class="new">New</button>
-                        <button class="reset">Reset</button>
                         <button class="search-view">Search TMDb</button>
+                        <button class="reset">Reset</button>
                     </div>`;
 
             return view;
         };
-
 
         const editView = (i, movie) => {
             return `<h2>Edit Movie</h2>
@@ -115,35 +121,31 @@
                 </div>`;
         };
 
-
         const showView = (movie) => {
-            // Complete: generate HTML with movie information
             return `<h2>${movie.title}</h2>
                 <div class="field">Director</div>
-                <div>${movie.director}</div>
+                <div>${movie.director || "Unknown"}</div>
                 <div class="field">Thumbnail</div>
-                <div><img src="${movie.thumbnail}" width="200" onerror="this.src='files/noimage.png'"></div>
+                <div style="margin-top: 5px;"><img src="${movie.thumbnail}" width="200" style="border-radius: 8px;" onerror="this.src='files/noimage.png'"></div>
                 <div class="actions">
                     <button class="index">Back</button>
                 </div>`;
-        }
+        };
 
-
-         const newView = () => {
+        const newView = () => {
             return `<h2>Create Movie</h2>
                 <div class="field">Title <br>
-                <input type="text" id="titulo" placeholder="Title"></div>
+                <input type="text" id="title" placeholder="Title"></div>
                 <div class="field">Director <br>
                 <input type="text" id="director" placeholder="Director"></div>
                 <div class="field">Thumbnail <br>
-                <input type="text" id="miniatura" placeholder="Thumbnail URL"></div>
+                <input type="text" id="thumbnail" placeholder="Thumbnail URL"></div>
                 <div class="actions">
                     <button class="create">Create</button>
                     <button class="index">Back</button>
                 </div>`;
         };
 
-         // TMDb Search Form View
         const searchView = () => {
             return `
                 <h2>Search Movies in TMDb</h2>
@@ -162,7 +164,6 @@
             `;
         };
 
-         // TMDb Search Results Rendering View
         const resultsView = (results) => {
             if (!results || results.length === 0) {
                 return `<div class="alert alert-info">No movies found matching your search.</div>`;
@@ -191,32 +192,27 @@
             return html;
         };
 
-
         // CONTROLLERS 
         const indexContr = () => {
             let my_movies = JSON.parse(localStorage.my_movies);
             document.getElementById('main').innerHTML = indexView(my_movies);
-         };
-
+        };
 
         const showContr = (i) => {
-            // Complete: controller that shows the showView(movie)
             let movie = JSON.parse(localStorage.my_movies)[i];
             document.getElementById('main').innerHTML = showView(movie);
         };
 
         const newContr = () => {
-            // Complete: controller that shows the newView()
             document.getElementById('main').innerHTML = newView();
         };
 
         const createContr = () => {
-            // Complete: controller that creates a new movie in the model saved in localStorage
             let my_movies = JSON.parse(localStorage.my_movies);
             let newMovie = {
-                title: document.getElementById('titulo').value,
+                title: document.getElementById('title').value,
                 director: document.getElementById('director').value,
-                thumbnail: document.getElementById('miniatura').value
+                thumbnail: document.getElementById('thumbnail').value
             };
             my_movies.push(newMovie);
             localStorage.my_movies = JSON.stringify(my_movies);
@@ -228,20 +224,16 @@
             document.getElementById('main').innerHTML = editView(i, movie);
         };
 
-
         const updateContr = (i) => {
             let my_movies = JSON.parse(localStorage.my_movies);
-            my_movies[i].title    = document.getElementById('title').value;
+            my_movies[i].title     = document.getElementById('title').value;
             my_movies[i].director  = document.getElementById('director').value;
             my_movies[i].thumbnail = document.getElementById('thumbnail').value;
             localStorage.my_movies = JSON.stringify(my_movies);
             indexContr();
         };
 
-
         const deleteContr = (i) => {
-            // Complete: controller that updates the model by deleting the selected movie
-            // Generates confirmation dialog: Accept button returns true, Cancel false
             if (confirm("Are you sure you want to delete this movie?")) {
                 let my_movies = JSON.parse(localStorage.my_movies);
                 my_movies.splice(i, 1);
@@ -251,25 +243,20 @@
         };
 
         const resetContr = () => {
-            // Complete: controller that resets the model saved in localStorage with the original movies
             localStorage.my_movies = JSON.stringify(initial_movies);
             indexContr();
         };
 
-         // Search Page Controller
         const searchViewContr = () => {
             document.getElementById('main').innerHTML = searchView();
         };
 
-        // Save API Key
         const saveKeyContr = () => {
             const key = document.getElementById('api_key_input').value.trim();
             localStorage.setItem('tmdb_api_key', key);
             alert("API Key saved successfully!");
         };
 
-
-         // TMDb API Fetch Controller
         const searchContr = async (query) => {
             const resultsContainer = document.getElementById('search_results');
             
@@ -311,21 +298,18 @@
             }
         };
 
-         // Controller to Add Movie from Search Results
         const addFromAPIContr = (tmdbId, buttonEl) => {
             const selectedMovie = currentSearchResults.find(m => m.id === tmdbId);
             if (!selectedMovie) return;
 
             let my_movies = JSON.parse(localStorage.my_movies);
 
-            // Check duplicate
             const exists = my_movies.some(m => m.title.toLowerCase() === selectedMovie.title.toLowerCase());
             if (exists) {
                 alert(`"${selectedMovie.title}" is already in your local collection.`);
                 return;
             }
 
-             // Construct new movie object
             const newMovie = {
                 title: selectedMovie.title,
                 director: "TMDb Import",
@@ -334,7 +318,6 @@
                     : "files/noimage.png"
             };
 
-            // Disable button temporarily
             buttonEl.disabled = true;
             buttonEl.innerText = "Added!";
 
@@ -352,14 +335,14 @@
         const myId = (ev) => Number(ev.target.dataset.myId);
 
         document.addEventListener('click', ev => {
-            if      (matchEvent(ev, '.index'))  indexContr  ();
-            else if (matchEvent(ev, '.edit'))   editContr   (myId(ev));
-            else if (matchEvent(ev, '.update')) updateContr (myId(ev));
-            else if (matchEvent(ev, '.new'))    newContr    ();
-            else if (matchEvent(ev, '.reset'))  resetContr  ();
-            else if (matchEvent(ev, '.show'))   showContr   (myId(ev));
-            else if (matchEvent(ev, '.delete')) deleteContr (myId(ev));
-            else if (matchEvent(ev, '.create')) createContr ();
+            if      (matchEvent(ev, '.index'))       indexContr();
+            else if (matchEvent(ev, '.edit'))        editContr(myId(ev));
+            else if (matchEvent(ev, '.update'))      updateContr(myId(ev));
+            else if (matchEvent(ev, '.new'))         newContr();
+            else if (matchEvent(ev, '.reset'))       resetContr();
+            else if (matchEvent(ev, '.show'))        showContr(myId(ev));
+            else if (matchEvent(ev, '.delete'))      deleteContr(myId(ev));
+            else if (matchEvent(ev, '.create'))      createContr();
             else if (matchEvent(ev, '.search-view')) searchViewContr();
             else if (matchEvent(ev, '.save-key'))    saveKeyContr();
             else if (matchEvent(ev, '.search')) {
@@ -370,20 +353,15 @@
                 const tmdbId = Number(ev.target.dataset.tmdbId);
                 addFromAPIContr(tmdbId, ev.target);
             }
-        })
+        });
 
-        
-        
         // Initialization        
         document.addEventListener('DOMContentLoaded', indexContr);
     </script>
 </head>
 
 <body>
-
     <h1>My Favourite Movies</h1>
     <div id="main"> <!-- The view is included here --> </div>
-    
 </body>
 </html>
-
